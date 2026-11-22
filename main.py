@@ -57,8 +57,8 @@ def main():
             "cost_month": monthly_cost
         })
     for item in appliances:
-        print(f"Name of appliance is {item['name']} and its usage details are {item['power_kW']}kW, {item['hours']}hours,{item['kWh_day']*30:.2f}kWh/day")
+        print(f"Name of appliance is {item['name']} and its usage details are {item['power_kW']}kW, {item['hours']}hours,{item['kWh_day']:.2f}kWh/day")
     print(f"Total kWh/month = {total_energy_monthly:.2f}")
     print(f"Total cost/month = ${total_energy_cost_monthly:.2f}")
-    print(f"Total CO2/month =  {total_co2_monthly:.2f}")
+    print(f"Total CO2/month = {total_co2_monthly:.2f}")
 main()
