@@ -8,4 +8,8 @@
 - Gave a small summary of the main appliance usage so it is easier to read
 - About 1 h and 30 min one stage 1 ad 2 and another 1 hour for half of stage 3
 - Sources: tariff $0.3116/kWh (SP Group), emission factor 0.404 kg CO2/kWh (EMA).
--
+
+## 23 Nov 2026
+ - Stage 3 done
+ - Much easier to read summary
+ - Unlimited appliances 
