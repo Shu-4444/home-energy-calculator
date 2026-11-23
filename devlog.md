@@ -10,6 +10,9 @@
 - Sources: tariff $0.3116/kWh (SP Group), emission factor 0.404 kg CO2/kWh (EMA).
 
 ## 23 Nov 2026
- - Stage 3 done
+ - Stage 3 and 4 done
  - Much easier to read summary
  - Unlimited appliances 
+ - TYPE errors exist and it time to fix that
+ - Fixed all errors and checking. Now even with bad input it will prompt user again
+ - Learned how to use try and except for checking inputs
