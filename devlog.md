@@ -16,3 +16,14 @@
  - TYPE errors exist and it time to fix that
  - Fixed all errors and checking. Now even with bad input it will prompt user again
  - Learned how to use try and except for checking inputs
+
+## 24 Nov 2026
+ - Stage 5 done
+ - Major edits have been done to prevent code from crashing
+ - Much easier to read summary and tables
+ - Learned how to properly width everything i think called f' string padding
+ - Can see percentage cost now
+ - Enabled numbers in appliances (for eg. PS5) while rejecting all number values
+ - Renamed some stuff
+
+## 25 Nov 2026
