@@ -1,4 +1,5 @@
-import os 
+import os
+
 SG_ELECTRICITY_TARIFF = 0.3116
 SG_GRID_EMISSION_FACTOR = 0.404
 
@@ -186,7 +187,7 @@ def main():
 
 
 
-        if menu_choice == 5:
+        if menu_choice == 5:  # noqa: SIM102
             if appliances:
                 save_choice = input("Do you wish to save this home (y/n): ").strip().lower()
                 if save_choice == "yes":
