@@ -27,3 +27,10 @@
  - Renamed some stuff
 
 ## 25 Nov 2026
+ - Stage 6 done
+ - LEarned how files work like with open and all that
+ - Improvements made:
+ - Now able to save appliances previously entered. Much easier on the user
+ - User can also add more and load the home according to thy
+ - Gave cautions to user too if they typed wrongly
+ - Gave ability to delete their home if needed

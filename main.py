@@ -1,3 +1,4 @@
+import os 
 SG_ELECTRICITY_TARIFF = 0.3116
 SG_GRID_EMISSION_FACTOR = 0.404
 
@@ -54,12 +55,60 @@ def input_appliance():
             continue
         return appliance
 
+def save_home(appliances, filename = "home.csv"):
+    with open(filename , 'w') as file:
+        for app in appliances:
+            line = f"{app['name']},{app['power_kW']},{app['hours']},{app['kWh_month']},{app['CO2_month']},{app['cost_month']}\n"
+            file.write(line)
+    print("Home Saved")
+
+def load_home(filename= "home.csv"):
+    appliances = []
+    with open(filename, 'r') as file:
+        for line in file:
+            clean_line = line.strip()
+            if not clean_line:
+                continue
+            parts = clean_line.split(',')
+            appliances.append({
+                'name': parts[0],
+                'power_kW': float(parts[1]),
+                'hours': float(parts[2]),
+                'kWh_month': float(parts[3]),
+                'CO2_month': float(parts[4]),
+                'cost_month': float(parts[5]),
+
+            })
+    return appliances
+
 def main():
     print("=== Home Energy Calculator ===")
     appliances = []
     total_energy_monthly = 0
     total_cost_monthly = 0
     total_co2_monthly = 0
+
+    if os.path.exists("home.csv"):
+        choice = input("Do you wish to load this home (y/n)?: ").strip().lower()
+        if choice == "yes":
+            choice = input("Please enter y instead of yes: ").strip().lower()
+        if choice != 'y':
+            print('Are you sure you do not want to load your old home. You may lose it if you add any new appliances.')
+            choice_2 = input("If you truly want to load your old home please type y(not yes): ").strip().lower()
+        if choice == 'y' or choice_2 == 'y':
+            appliances = load_home()
+            print("These are your appliances")
+            if appliances:
+                sorted_appliances = sorted(appliances, key = lambda x: x["kWh_month"], reverse=True)
+                print(f"{'Appliance':<15}{'kWh/month':>12}{'Share by kWh':>16}{'cost/month':>16}{'Share by cost':>20}")
+
+                for app in sorted_appliances:
+                    print(f"{app['name']:<15}{app['kWh_month']:>12.2f}{app['cost_month']:>30.2f}")
+
+
+                
+
+
     while True:
         appliance = input_appliance()
 
@@ -74,9 +123,7 @@ def main():
         daily_cost, monthly_cost, yearly_cost = calculate_cost(total_energy, SG_ELECTRICITY_TARIFF)  # noqa: RUF059
         carbon_emission_daily, carbon_emission_monthly, carbon_emission_yearly = calculate_co2_emission(total_energy,SG_GRID_EMISSION_FACTOR)  # noqa: RUF059
 
-        total_energy_monthly += total_energy *30
-        total_cost_monthly += monthly_cost
-        total_co2_monthly += carbon_emission_monthly
+
 
 
         appliances.append({
@@ -87,6 +134,9 @@ def main():
             "CO2_month": carbon_emission_monthly,
             "cost_month": monthly_cost
         })
+    total_energy_monthly += sum(item['kWh_month'] for item in appliances)
+    total_cost_monthly +=sum(item['cost_month'] for item in appliances)
+    total_co2_monthly += sum(item['CO2_month'] for item in appliances)
     for item in appliances:
         print(f"Name of appliance is {item['name']} and its usage details are {item['power_kW']}kW, {item['hours']} hours daily, {item['kWh_month']:.2f}kWh/month")
     print(f"Total kWh/month = {total_energy_monthly:.2f} kWh")
@@ -107,5 +157,29 @@ def main():
         print(f"Your biggest user is the {most_appliance}: {most_percentage_cost:.1f}% of your bill")
     else:
         print('No appliances entered')
+    if appliances:
+        save_choice = input("Do you wish to save this home (y/n): ").strip().lower()
+        if save_choice == "yes":
+            save_choice = input("Please enter y instead of yes: ").strip().lower()
+        if save_choice != 'y': 
+            print("Are you sure you do not want to save this home. You will lose everything that you entered currently")
+            save_choice_2 = input("If you want to save press y: ").strip().lower()        
+        if save_choice == 'y' or save_choice_2 == 'y':
+            save_home(appliances)
+    FILE_NAME = "home.csv"
+    if os.path.exists(FILE_NAME):
+        delete_choice = input("Do you wish to delete your home (y/n): ").strip().lower()
+        if delete_choice == 'yes':
+            delete_choice = input("Please type y instead of yes").strip().lower()
+        if delete_choice == 'y':
+            print('Are you sure. You will lose your old home save and will start with no appliances')
+            delete_choice_2 = input("If your truly sure that you want to delete your save press y: ").strip().lower()
+            if delete_choice_2 == 'y':
+                os.remove(FILE_NAME)
+                print("Old home removed")
+            else:
+                print('Deletion cancelled')
+        else:
+            print("Deletion cancelled")
 
 main()
