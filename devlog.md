@@ -37,3 +37,10 @@
  - Made a menu which is now much easier to go around 
  - 8 options exist
  - Much easier to use
+
+## 26 Nov 2026
+ - Stage 7.2 has been (partially)finished
+ - Major changes have been out
+ - Alot of bug fixes and logic errors changed
+ - Added more option in main menu and options do more and check for faults more
+ - There are also ways to exit the if statements if you are accidentally in them
