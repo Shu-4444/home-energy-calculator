@@ -20,16 +20,40 @@ def calculate_co2_emission(total_energy, SG_GRID_EMISSION_FACTOR):
     return carbon_emission_daily, carbon_emission_monthly, carbon_emission_yearly
 
 def input_power_kW():
+    print("If you are unsure of how many watts your appliance uses check for its wattage or refer to our list for avg watt")
     while True:
-        try:
-            power_kW = float(input("Enter the power consumption of the appliance in watts (W): ")) / 1000
-            if 0 >= power_kW:
-                print("Please enter proper wattage (must be above 0 watts)")
-                continue
-            return power_kW
-        except ValueError:
-            print("Please enter a proper numerical value")
+        choice = input("If you are sure of how much power you're appliance is using type'1' and if you are unsure type '2': ")
+        if choice.isnumeric() == False:
+            print("Please enter a correct value")
             continue
+        if int(choice)<1 or int(choice)>2:
+            print("Please enter a correct value")
+            continue    
+        if int(choice) >= 1 and int(choice)<=2:
+            break
+    if choice == '1':
+        while True:
+            try:
+                power_kW = float(input("Enter the power consumption of the appliance in watts (W): ")) / 1000
+                if 0 >= power_kW:
+                    print("Please enter proper wattage (must be above 0 watts)")
+                    continue
+                return power_kW
+            except ValueError:
+                print("Please enter a proper numerical value")
+                continue
+    if choice == '2':
+        appliance_guide()
+        while True:
+            try:
+                power_kW = float(input("Enter the power consumption of the appliance in watts (W): ")) / 1000
+                if 0 >= power_kW:
+                    print("Please enter proper wattage (must be above 0 watts)")
+                    continue
+                return power_kW
+            except ValueError:
+                print("Please enter a proper numerical value")
+                continue
 
 def input_hours():
     while True:
@@ -114,6 +138,130 @@ def get_menu_choice():
             option = int(option)
             return option
 
+def recalculate(app):
+    total_energy = calculate_energy_used(app['power_kW'], app['hours'])
+    daily_cost, monthly_cost, yearly_cost = calculate_cost(total_energy, SG_ELECTRICITY_TARIFF)  # noqa: RUF059
+    carbon_emission_daily, carbon_emission_monthly, carbon_emission_yearly = calculate_co2_emission(total_energy,SG_GRID_EMISSION_FACTOR)  # noqa: RUF059
+    app['kWh_month'] = total_energy *30
+    app['cost_month'] = monthly_cost
+    app['CO2_month'] = carbon_emission_monthly
+
+def check_home(filename = FILE_NAME):
+    if not os.path.exists(filename):
+        print("There is no saved home to check")
+        return
+
+    corrupted_lines = []
+    name_counts = {}
+    with open(filename, "r") as file:
+        for line_num, line in enumerate(file, start=1):
+            clean_line = line.strip()
+            if not clean_line:
+                continue
+            parts = clean_line.split(',')
+            if len(parts) != 6:
+                corrupted_lines.append(line_num)
+                continue
+            try:
+                for i in range(1,6):
+                    float(parts[i])
+                app_name = parts[0].strip().lower()
+                name_counts[app_name] = name_counts.get(app_name,0) + 1
+            except ValueError:
+                corrupted_lines.append(line_num)
+    print("\n --- Home File Check Report ---")
+    has_issues = False
+
+    if corrupted_lines:
+        has_issues = True
+        print(f"Corrupted lines found at line numbers : {corrupted_lines}")
+        print("To fix the corruption please open the file by yourself")
+
+    repeats = {name : count for name, count in name_counts.items() if count>1}
+    if repeats:
+        has_issues = True
+        print("Repeated appliance names have been found:")
+        print("To fix the problem please open the file yourself and remove the extra appliance")
+        for name, count in repeats.items():
+            print(f" - {name} appears {count} times")
+    if not has_issues:
+        print("The file is clean and no corrupted lines or repeated applications have been found")
+
+def appliance_guide(): #took sg appliances from gemini and google 
+    sg_appliances = [
+        # Cooling & Water Heating
+        {"name": "Split Air-Conditioner (System 3 / 4)", "category": "Cooling & Heating", "min_watt": 1500, "max_watt": 3500, "avg_watt": 2200},
+        {"name": "Portable Air-Conditioner", "category": "Cooling & Heating", "min_watt": 900, "max_watt": 1500, "avg_watt": 1200},
+        {"name": "Instant Water Heater", "category": "Cooling & Heating", "min_watt": 3000, "max_watt": 3600, "avg_watt": 3300},
+        {"name": "Storage Water Heater", "category": "Cooling & Heating", "min_watt": 1500, "max_watt": 3000, "avg_watt": 2000},
+        {"name": "Ceiling Fan", "category": "Cooling & Heating", "min_watt": 50, "max_watt": 90, "avg_watt": 70},
+        {"name": "Standing / Table Fan", "category": "Cooling & Heating", "min_watt": 40, "max_watt": 65, "avg_watt": 50},
+        {"name": "Air Purifier / Dehumidifier", "category": "Cooling & Heating", "min_watt": 30, "max_watt": 300, "avg_watt": 60},
+
+        # Kitchen & Cooking
+        {"name": "Refrigerator (Inverter)", "category": "Kitchen", "min_watt": 100, "max_watt": 300, "avg_watt": 150},
+        {"name": "Induction Hob / Cooker", "category": "Kitchen", "min_watt": 1800, "max_watt": 3000, "avg_watt": 2200},
+        {"name": "Electric Kettle", "category": "Kitchen", "min_watt": 1800, "max_watt": 2400, "avg_watt": 2000},
+        {"name": "Air Fryer", "category": "Kitchen", "min_watt": 1400, "max_watt": 1800, "avg_watt": 1500},
+        {"name": "Microwave Oven", "category": "Kitchen", "min_watt": 800, "max_watt": 1500, "avg_watt": 1100},
+        {"name": "Built-in Electric Oven", "category": "Kitchen", "min_watt": 2000, "max_watt": 3000, "avg_watt": 2400},
+        {"name": "Rice Cooker", "category": "Kitchen", "min_watt": 500, "max_watt": 800, "avg_watt": 650},
+        {"name": "Toaster / Toaster Oven", "category": "Kitchen", "min_watt": 800, "max_watt": 1500, "avg_watt": 1000},
+        {"name": "Water Dispenser (Hot & Cold)", "category": "Kitchen", "min_watt": 500, "max_watt": 2200, "avg_watt": 800},
+        {"name": "Espresso / Coffee Machine", "category": "Kitchen", "min_watt": 1000, "max_watt": 1500, "avg_watt": 1200},
+        {"name": "Blender", "category": "Kitchen", "min_watt": 300, "max_watt": 800, "avg_watt": 500},
+        {"name": "Dishwasher", "category": "Kitchen", "min_watt": 1200, "max_watt": 2200, "avg_watt": 1500},
+
+        # Laundry & Cleaning
+        {"name": "Washing Machine", "category": "Laundry & Cleaning", "min_watt": 400, "max_watt": 2000, "avg_watt": 500},
+        {"name": "Clothes Dryer", "category": "Laundry & Cleaning", "min_watt": 800, "max_watt": 3000, "avg_watt": 1800},
+        {"name": "Steam Iron / Garment Steamer", "category": "Laundry & Cleaning", "min_watt": 1500, "max_watt": 2400, "avg_watt": 1800},
+        {"name": "Cordless Stick / Robot Vacuum", "category": "Laundry & Cleaning", "min_watt": 30, "max_watt": 400, "avg_watt": 100},
+        {"name": "Corded Vacuum Cleaner", "category": "Laundry & Cleaning", "min_watt": 1000, "max_watt": 2000, "avg_watt": 1400},
+
+        # Home Office, Lighting & Personal Care
+        {"name": "LED TV (55\"–65\")", "category": "Electronics & Lighting", "min_watt": 80, "max_watt": 180, "avg_watt": 120},
+        {"name": "Desktop PC & Monitor", "category": "Electronics & Lighting", "min_watt": 150, "max_watt": 450, "avg_watt": 250},
+        {"name": "Laptop (Charging)", "category": "Electronics & Lighting", "min_watt": 45, "max_watt": 100, "avg_watt": 65},
+        {"name": "Wi-Fi Router & ONT Modem", "category": "Electronics & Lighting", "min_watt": 10, "max_watt": 25, "avg_watt": 18},
+        {"name": "LED Ceiling Light / Downlight", "category": "Electronics & Lighting", "min_watt": 9, "max_watt": 24, "avg_watt": 15},
+        {"name": "Hair Dryer", "category": "Electronics & Lighting", "min_watt": 1500, "max_watt": 2200, "avg_watt": 1800},
+    ]
+    print("1) Cooling & Heating")
+    print("2) Kitchen")
+    print("3) Laundry & Cleaning")
+    print("4) Electronics & Lighting")
+    print("Which type is your appliance")
+    while True:
+        option = input("Choose an option (1 to 4) and if you would like to cancel please type 'cancel': ").strip()
+        if option.lower() == 'cancel':
+            break
+        if option.isnumeric() == False: 
+            print("Please type a NUMBER between 1 to 4")
+            continue
+        elif int(option) < 1 or int(option) > 4:
+            print("Please choose a number BETWEEN 1 AND 4")
+        else:
+            break
+    if option.lower() == 'cancel':
+        return
+    if option == '1':
+        for app in sg_appliances:
+            if app["category"] == "Cooling & Heating":
+                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+    if option == '2':
+        for app in sg_appliances:
+            if app["category"] == "Kitchen":
+                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+    if option == '3':
+        for app in sg_appliances:
+            if app["category"] == "Laundry & Cleaning":
+                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+    if option == '4':
+        for app in sg_appliances:
+            if app["category"] == "Electronics & Lighting":
+                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+
 def main():
     print("=== Home Energy Calculator ===")
     appliances = []
@@ -123,12 +271,9 @@ def main():
     while True:
         menu_choice = get_menu_choice()
 
-
-
-
         if menu_choice == 1:
             while True:
-                option = input("Type '1' to add appliance to list. Type '2' to append the list if your list has magically disappeared ").strip()
+                option = input("Type '1' to add appliance to list. Type '2' to append the list if your old list has magically disappeared: ").strip()
                 if option.isnumeric() == False:
                     print("Please enter a correct value")
                     continue
@@ -174,9 +319,7 @@ def main():
                     if append_choice == 'y' or append_choice_2 == 'y':
                         append_home(appliances)
                 else:
-                    print("No appliances to be saved")
-
-
+                    print("No appliances to be appended")
 
         if menu_choice == 2:
             while True:
@@ -216,7 +359,7 @@ def main():
                 if appliances:
                     name =[app["name"] for app in appliances] 
                     while True:
-                        get_appliance = input("Which appliance do you want to remove: ").strip()
+                        get_appliance = input("Which appliance do you want to remove (please type in exact cap and wording you used): ").strip()
                         if get_appliance not in name :
                             print("Please enter a valid appliance ")
                         else:
@@ -233,24 +376,21 @@ def main():
                 else:
                     print("No appliances to save")
 
-
-
-
         if menu_choice == 3:
             if appliances:
                 print("Current appliances:")
                 for i,app in enumerate(appliances, start = 1):
-                    print(f"{i}: {app['name']}, {app['power_kW'] * 1000:.2f}kW, {app['hours']} hours, {app['kWh_month']:.2f}kWh/month, ${app['cost_month']:.2f}, {app['CO2_month']}Co2/month ")
-                choice = input("Choose what appliance you want to change (or type 'cancel' to cancel)")
+                    print(f"{i}: {app['name']}, {app['power_kW'] * 1000:.2f}kW, {app['hours']} hours, {app['kWh_month']:.2f}kWh/month, ${app['cost_month']:.2f}, {app['CO2_month']:.2f}Co2/month ")
+                choice = input("Choose what appliance you want to change (or type 'cancel' to cancel): ").strip().lower()
                 if choice.lower() == 'cancel':
                     print('Cancelled')
                     continue
-                if choice.isnumeric() == False or (1< int(choice) > len(appliances)):
+                if choice.isnumeric() == False or 1> int(choice) or int(choice) > len(appliances):
                     print("Please enter a valid appliance number.")
                     continue
-                if choice.isnumeric() and (1>= int(choice) <= len(appliances)):
+                if choice.isnumeric() and (1<= int(choice) <= len(appliances)):
                     print(f"You have chosen {appliances[int(choice)-1]['name']}")
-                    correct_choice = input("If this is not the appliance you want type 'cancel'")
+                    correct_choice = input("If this is not the appliance you want type 'cancel' or press enter to continue: ")
                     if correct_choice == 'cancel':
                         continue
                     index = int(choice) -1
@@ -263,13 +403,13 @@ def main():
                     if second_choice.strip().lower() == 'cancel':
                         print("Cancelled")
                         continue
-                    if second_choice.strip().isnumeric() == False or (1>int(second_choice)>3):
+                    if second_choice.strip().isnumeric() == False or 1>int(second_choice) or int(second_choice)>3:
                         print("Please add a correct value")
                         continue
                     if second_choice.strip().isnumeric() and (1<= int(second_choice) <= 3):
                         if second_choice == '1':
                             new_name = input("Please type the new name: ")
-                            if new_name ==' ' or new_name == 'cancel' or new_name == 'done':
+                            if new_name == 'cancel' or new_name == 'done':
                                 print("Name change cancelled")
                                 continue
                             has_letter = any(c.isalpha() for c in  new_name)
@@ -282,22 +422,12 @@ def main():
                         if second_choice == '2':
                             new_power = input_power_kW()
                             app['power_kW'] = new_power
-                            total_energy = calculate_energy_used(app['power_kW'], app['hours'])
-                            monthly_cost = calculate_cost(total_energy, SG_ELECTRICITY_TARIFF)
-                            total_co2_monthly = calculate_co2_emission(total_energy, SG_GRID_EMISSION_FACTOR)
-                            app['kWh_month'] = total_energy *30
-                            app['cost_month'] = total_cost_monthly
-                            app['CO2_month'] = total_co2_monthly
+                            recalculate(app)
                             print("Power and monthly estimates have been recalculated")
                         if second_choice == '3':
                             new_hours = input_hours()
                             app['hours'] = new_hours
-                            total_energy = calculate_energy_used(app['power_kW'], app['hours'])
-                            monthly_cost = calculate_cost(total_energy, SG_ELECTRICITY_TARIFF)
-                            total_co2_monthly = calculate_co2_emission(total_energy, SG_GRID_EMISSION_FACTOR)
-                            app['kWh_month'] = total_energy *30
-                            app['cost_month'] = total_cost_monthly
-                            app['CO2_month'] = total_co2_monthly
+                            recalculate(app)
                             print("Hours and monthly estimates have been recalculated")
             else:
                 print("There are no current appliances")
@@ -327,12 +457,9 @@ def main():
             else:
                 print('No appliances entered')
 
-
-
-
         if menu_choice == 5:
             while True:
-                option = input("When saving the list there may be a chance the home.csv file gets overridden. Type 'cancel' to cancel and type '1' if you are sure to save home ").strip()
+                option = input("When saving the list there may be a chance the home.csv file gets overridden. Type 'cancel' to cancel and type '1' if you are sure to save home: ").strip()
                 if option == 'cancel':
                     break
                 if option.isnumeric() == False:
@@ -357,14 +484,10 @@ def main():
                         save_home(appliances)
                 else:
                     print("There is nothing in appliance to be saved")
-            
-
-
-
 
         if menu_choice == 6:
             while True:
-                option = input("If you choose to load your saved home you will lose your current list. To prevent that type '1' to go back to menu or type '2' to continue ").strip()
+                option = input("If you choose to load your saved home you will lose your current list. To prevent that type '1' to go back to menu or type '2' to continue: ").strip()
                 if option.isnumeric() == False:
                     print("Please enter a correct value")
                     continue
@@ -395,9 +518,6 @@ def main():
                 else:
                     print("There is no saved home.")
 
-
-
-
         if menu_choice == 7:
             if os.path.exists(FILE_NAME):
                 delete_choice = input("Do you wish to delete your home (y/n): ").strip().lower()
@@ -416,15 +536,9 @@ def main():
             else:
                 print("There is no saved home to delete")
 
-
-
-
-
         if menu_choice == 8:
             print("Welcome to home checker. Checks for repeated saves and corrupted files")
-            print("On development")
-
-
+            check_home()
 
         if menu_choice == 9:
             print("You have exited the application")

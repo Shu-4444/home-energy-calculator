@@ -44,3 +44,13 @@
  - Alot of bug fixes and logic errors changed
  - Added more option in main menu and options do more and check for faults more
  - There are also ways to exit the if statements if you are accidentally in them
+
+## 27 Nov 2026
+ - Stage 7 done
+ - Application has been finished
+ - ALL major bug fixes and logic errors have been dealt with
+ - Considering a gui but i am to beginner for all that
+ - Improvements like home checker has been made which is easier for user to check if their home is corrupt
+ - Some feedback given was people really do not know what their wattage is. 
+ - Gave a list where the user can look up common appliances
+ - However there is still code to make it easier for user
