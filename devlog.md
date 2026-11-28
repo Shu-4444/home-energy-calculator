@@ -54,3 +54,7 @@
  - Some feedback given was people really do not know what their wattage is. 
  - Gave a list where the user can look up common appliances
  - However there is still code to make it easier for user
+
+ ## 28 Nov 2026
+ - Project done
+ - Added some minor changes and bug fixes

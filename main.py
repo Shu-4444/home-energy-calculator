@@ -22,7 +22,7 @@ def calculate_co2_emission(total_energy, SG_GRID_EMISSION_FACTOR):
 def input_power_kW():
     print("If you are unsure of how many watts your appliance uses check for its wattage or refer to our list for avg watt")
     while True:
-        choice = input("If you are sure of how much power you're appliance is using type'1' and if you are unsure type '2': ")
+        choice = input("If you are sure of how much power you're appliance is using type '1' and if you are unsure type '2': ")
         if choice.isnumeric() == False:
             print("Please enter a correct value")
             continue
@@ -248,19 +248,19 @@ def appliance_guide(): #took sg appliances from gemini and google
     if option == '1':
         for app in sg_appliances:
             if app["category"] == "Cooling & Heating":
-                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+                print(f"{app['name']} = {app['avg_watt']}watts, range = {app['min_watt']}watts to {app['max_watt']}watts")
     if option == '2':
         for app in sg_appliances:
             if app["category"] == "Kitchen":
-                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+                print(f"{app['name']} = {app['avg_watt']}watts, range = {app['min_watt']}watts to {app['max_watt']}watts")
     if option == '3':
         for app in sg_appliances:
             if app["category"] == "Laundry & Cleaning":
-                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+                print(f"{app['name']} = {app['avg_watt']}watts, range = {app['min_watt']}watts to {app['max_watt']}watts")
     if option == '4':
         for app in sg_appliances:
             if app["category"] == "Electronics & Lighting":
-                print(f"'{app['name']}' = {app['avg_watt']}watts ")
+                print(f"{app['name']} = {app['avg_watt']}watts, range = {app['min_watt']}watts to {app['max_watt']}watts")
 
 def main():
     print("=== Home Energy Calculator ===")
